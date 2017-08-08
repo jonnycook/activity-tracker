@@ -1,0 +1,61 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Dashboard</ion-title>
+
+    <ion-buttons end>
+    <button ion-button icon-only (click)="reload()">
+      <ion-icon name="refresh"></ion-icon>
+    </button>
+    </ion-buttons>
+
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <div class="current-instances">
+    <ion-list-header>Current Instances</ion-list-header>
+    <button ion-item detail-none *ngFor="let instance of currentInstances" (click)="goToInstance(instance)">
+      <span>{{ instance.activity.name }}</span>
+      <span class="category">{{ instance.activity.category }}</span>
+      <button class="stop" ion-button item-right (click)="stopInstance($event, instance); $event.stopPropagation()"><duration [timer]="instance"></duration></button>
+    </button>
+    </div>
+
+    <ion-list-header>Start Activity</ion-list-header>
+    <button ion-item detail-none (click)="newActivity()">New activity...</button>
+
+    <div *ngFor="let entry of startActivitySection.entries">
+      <button class="activity" ion-item detail-none (click)="startActivity($event, entry.activity)" *ngIf="entry.type == 'activity'">
+        {{ entry.activity.name }}
+        <span item-right>{{ startActivitySection.entryTotalTime(entry) }}</span>
+      </button>
+      <button class="category" ion-item detail-none (click)="goToCategory(entry.category, entry.activities)" *ngIf="entry.type == 'category'">
+        {{ entry.category }}
+        <span item-right>{{ startActivitySection.entryTotalTime(entry) }}</span>
+      </button>
+    </div>
+
+    <ion-list-header>Routines</ion-list-header>
+    <button ion-item detail-none *ngFor="let routine of routines" (click)="goToRoutine(routine)">
+      {{ routine.name }}
+      <span item-right>{{ routineTimeInfo[routine._id] }}</span>
+    </button>
+
+<!--     <ion-list-header>Start Activity</ion-list-header>
+    <button ion-item detail-none (click)="newActivity()">New activity...</button>
+    <button ion-item detail-none *ngFor="let activity of activities" (click)="startActivity($event, activity)">
+      {{ activity.name }}
+      <span class="category">{{ activity.category }}</span>
+      <span item-right>{{ activityTotalTime(activity) }}</span>
+    </button>
+ -->
+
+  </ion-list>
+  <div *ngIf="selectedItem" padding>
+    You navigated here from <b>{{selectedItem.title}}</b>
+  </div>
+</ion-content>

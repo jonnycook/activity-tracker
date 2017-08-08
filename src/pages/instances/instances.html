@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Instances</ion-title>
+    <ion-buttons end>
+      <button ion-button icon-only (click)="reload()">
+        <ion-icon name="refresh"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <button ion-item *ngFor="let instance of instances" (click)="goToInstance(instance)">
+      {{ instance.activity.name }}
+      <!-- <span class="category">{{ instance.activity.category }}</span> -->
+      <span class="time-since">{{ timeSince(instance) }}</span>
+      <span *ngIf="instance.note" class="note">{{ instance.note }}</span>
+      <duration item-right [timer]="instance"></duration>
+    </button>
+  </ion-list>
+
+</ion-content>

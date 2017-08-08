@@ -1,0 +1,6 @@
+{
+  "globalDependencies": {
+    "moment-duration-format": "registry:dt/moment-duration-format#1.3.0+20161128184045",
+    "sugar": "registry:dt/sugar#0.0.0+20161003132729"
+  }
+}

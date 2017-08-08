@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/1965fee8a729ffe89f79459f171cc482f9e4119c/sugar/sugar.d.ts",
+    "raw": "registry:dt/sugar#0.0.0+20161003132729",
+    "typings": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/1965fee8a729ffe89f79459f171cc482f9e4119c/sugar/sugar.d.ts"
+  }
+}

@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>{{ routine.name }}</ion-title>
+    <ion-buttons end>
+    <button ion-button icon-only (click)="reload()">
+      <ion-icon name="refresh"></ion-icon>
+    </button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <button ion-item detail-none [ngClass]="{current: entry.current}" (click)="toggleActivity(entry.activity)" *ngFor="let entry of entries">
+      {{ entry.activity.name }}
+      <span class="category">{{ entry.activity.category }}</span>
+      <span item-right>{{ entry.time }}</span>
+    </button>
+  </ion-list>
+</ion-content>

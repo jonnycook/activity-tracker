@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>{{ instance.activity.name }}'s Instance</ion-title>
+    <ion-buttons end>
+    <button ion-button icon-only (click)="reload()">
+      <ion-icon name="refresh"></ion-icon>
+    </button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+<ion-content>
+  <div padding>
+    <button ion-button block (click)="goToActivity()">Go To Activity</button>
+    <ion-list>
+      <ion-item>
+        <ion-label floating>Note</ion-label>
+        <ion-input type="text" [(ngModel)]="instance.note" (blur)="save()"></ion-input>
+      </ion-item>
+    </ion-list>
+    <button ion-button block (click)="delete()">Delete</button>
+    <button ion-button block (click)="resume()">Resume</button>
+  </div>
+</ion-content>

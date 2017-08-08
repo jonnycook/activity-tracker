@@ -1,0 +1,25 @@
+page-dashboard {
+	.current-instances {
+			.category {
+				font-size: 72%;
+				color: gray;
+			}			
+		.stop {
+			text-transform: none;
+		}
+	}
+	.item {
+		&.activity {
+			.category {
+				font-size: 72%;
+				color: gray;
+			}			
+		}		
+
+		&.category {
+			.label {
+				font-style: italic;
+			}
+		}
+	}
+}

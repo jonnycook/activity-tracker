@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>{{ activity.name }}</ion-title>
+    <ion-buttons end>
+      <button ion-button icon-only (click)="loadInstances()">
+        <ion-icon name="refresh"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+<ion-content>
+  <div padding>
+    <ion-list>
+      <ion-item>
+        <ion-label floating>Name</ion-label>
+        <ion-input type="text" [(ngModel)]="activity.name" (change)="save()"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label floating>Category</ion-label>
+        <ion-input type="text" [(ngModel)]="activity.category" (change)="save()"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Done</ion-label>
+        <ion-toggle [(ngModel)]="activity.done" (ngModelChange)="save()"></ion-toggle>
+      </ion-item>
+    </ion-list>
+    <div padding>
+      <!-- <button ion-button color="primary" block (click)="save()">Save</button> -->
+      <button ion-button color="primary" block (click)="start()">Start</button>
+    </div>
+
+    <ion-list-header>Instances</ion-list-header>
+    <ion-list>
+      <button ion-item *ngFor="let instance of instances" (click)="goToInstance(instance)">
+        <!-- {{ instance.activity.name }} -->
+        <!-- <span class="category">{{ instance.activity.category }}</span> -->
+        <span class="time-since">{{ timeSince(instance) }}</span>
+        <span *ngIf="instance.note" class="note">{{ instance.note }}</span>
+        <duration item-right [timer]="instance"></duration>
+      </button>
+    </ion-list>
+  </div>
+</ion-content>

@@ -1,0 +1,13 @@
+page-activity {
+	.time-since, .category, .note {
+		font-size: 72%;
+		color: gray;
+	}
+
+	.note {
+		font-style: italic;
+		&:before, &:after {
+			content: '"';
+		}
+	}
+}

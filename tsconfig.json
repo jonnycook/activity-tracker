@@ -22,5 +22,12 @@
   "compileOnSave": false,
   "atom": {
     "rewriteTsconfig": false
-  }
+  },
+
+  "typeRoots": [
+    "./node_modules/@types"
+  ],
+  "types": [
+    "sugar"
+  ]
 }

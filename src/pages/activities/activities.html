@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Activities</ion-title>
+    <ion-buttons end>
+      <button ion-button icon-only (click)="load()">
+        <ion-icon name="refresh"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <button [ngClass]="{done:activity.done}" ion-item *ngFor="let activity of activities" (click)="goToActivity(activity)">
+      {{ activity.name }}
+      <span class="category">{{ activity.category }}</span>
+    </button>
+  </ion-list>
+</ion-content>
