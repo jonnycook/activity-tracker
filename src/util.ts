@@ -1,4 +1,5 @@
 import { Events } from 'ionic-angular';
+import moment from 'moment';
 
 export function applyMixins(derivedCtor: any, baseCtors: any[]) {
     baseCtors.forEach(baseCtor => {
@@ -49,4 +50,9 @@ export class ComponentBase {
 			clearInterval(id);
 		}
 	}
+}
+
+
+export function formatDuration(duration) {
+  return moment.duration(duration, 'ms').format('h[h]m[m]s[s]');
 }

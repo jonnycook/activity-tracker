@@ -4,7 +4,6 @@ import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { HttpModule } from '@angular/http';
 
 import { MyApp } from './app.component';
-import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
 import { InstancesPage } from '../pages/instances/instances';
 import { InstancePage } from '../pages/instance/instance';
@@ -19,11 +18,11 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
 import { Api } from '../api';
+import { DataFrame } from '../DataFrame';
 
 @NgModule({
   declarations: [
     MyApp,
-    HomePage,
     ListPage,
     DashboardPage,
     NewActivityPage,
@@ -43,7 +42,6 @@ import { Api } from '../api';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage,
     ListPage,
     DashboardPage,
     InstancesPage,
@@ -58,7 +56,8 @@ import { Api } from '../api';
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
-    Api
+    Api,
+    DataFrame,
   ]
 })
 export class AppModule {}

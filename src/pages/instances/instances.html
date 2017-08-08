@@ -16,7 +16,7 @@
     <button ion-item *ngFor="let instance of instances" (click)="goToInstance(instance)">
       {{ instance.activity.name }}
       <!-- <span class="category">{{ instance.activity.category }}</span> -->
-      <span class="time-since">{{ timeSince(instance) }}</span>
+      <span class="time-since">{{ instance.time }}</span>
       <span *ngIf="instance.note" class="note">{{ instance.note }}</span>
       <duration item-right [timer]="instance"></duration>
     </button>

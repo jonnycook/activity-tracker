@@ -4,14 +4,17 @@ import { Http } from '@angular/http';
 import { InstancePage } from '../instance/instance';
 import Sugar from 'sugar';
 import { ComponentBase } from '../../util';
+import { DataFrame } from '../../DataFrame';
+
 @Component({
   selector: 'page-instances',
   templateUrl: 'instances.html'
 })
 export class InstancesPage extends ComponentBase {
-  instances: any = [];
-
+  instances: any;
+  dfc: any;
   constructor(
+    public dataFrame: DataFrame,
     public http: Http,
     public events: Events,
     public changeDetector: ChangeDetectorRef,
@@ -19,26 +22,17 @@ export class InstancesPage extends ComponentBase {
     public modalController: ModalController,
     public navParams: NavParams) {
     super();
-    this.reload();
+  }
 
-    this.subscribe('data:reload', () => {
-      this.reload();
-      console.log('asdf');
+  ngOnInit() {
+    this.dfc = this.dataFrame.uses(['instances'], collections => {
+      this.instances = collections[0].collection;
+      this.changeDetector.detectChanges();
     });
   }
 
   ngOnDestroy() {
-    super.ngOnDestroy();
-    console.log('destroy');
-  }
-
-  loadInstances() {
-    this.http.get('http://jonnycook.com:8000/v1/instances')
-      .subscribe(response => {
-        this.instances = response.json();
-        this.instances.sort((a, b) => a.start > b.start ? -1 : 1)
-      });
-
+    this.dfc.destruct();
   }
 
   timeSince(instance) {
@@ -50,6 +44,6 @@ export class InstancesPage extends ComponentBase {
   }
 
   reload() {
-    this.loadInstances();
+    this.dfc.reload();
   }
 }

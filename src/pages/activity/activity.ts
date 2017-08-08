@@ -8,6 +8,8 @@ import Sugar from 'sugar';
 
 import { ToastController } from 'ionic-angular';
 
+import { DataFrame } from '../../DataFrame';
+
 
 @Component({
   selector: 'page-activity',
@@ -15,8 +17,10 @@ import { ToastController } from 'ionic-angular';
 })
 export class ActivityPage extends ComponentBase {
   activity: any;
-  instances: any;
+  instances: any = [];
+  dfc: any;
   constructor(
+    public dataFrame: DataFrame,
     public toastCtrl: ToastController,
     public http: Http,
     public api: Api,
@@ -27,19 +31,16 @@ export class ActivityPage extends ComponentBase {
     public navParams: NavParams) {
     super();
     this.activity = this.navParams.get('activity');
-    this.loadInstances();
-    this.subscribe('data:reload', () => {
-      this.loadInstances();
-    })
+
+    this.dfc = this.dataFrame.uses([['activityInstances', this.activity._id]], (collections) => {
+      this.instances = collections[0].collection
+    });
   }
 
-  async loadInstances() {
-    this.instances = await this.api.activityInstances(this.activity);
-    this.instances.sort((a, b) => a.start > b.start ? -1 : 1);
-  }
 
   ngOnDestroy() {
     super.ngOnDestroy();
+    this.dfc.destruct();;
     this.save();
   }
   
@@ -57,7 +58,7 @@ export class ActivityPage extends ComponentBase {
   // }
   async save() {
     await this.http.patch('http://jonnycook.com:8000/v1/activities/' + this.activity._id, this.activity).toPromise();
-    this.events.publish('data:reload');
+    this.dataFrame.changed(['activities']);
     // this.toastCtrl.create({
     //   message: 'Activity saved',
     //   duration: 3000
@@ -65,8 +66,8 @@ export class ActivityPage extends ComponentBase {
   }
 
   async start() {
-    await this.api.startActivity(this.activity);;
-    this.loadInstances();
+    await this.api.startActivity(this.activity);
+    this.dataFrame.changed([['activityInstances', this.activity._id]]);
   }
 
   timeSince(instance) {
