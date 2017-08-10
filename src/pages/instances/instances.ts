@@ -5,6 +5,7 @@ import { InstancePage } from '../instance/instance';
 import Sugar from 'sugar';
 import { ComponentBase } from '../../util';
 import { DataFrame } from '../../DataFrame';
+import { Data } from '../../Data';
 
 @Component({
   selector: 'page-instances',
@@ -14,29 +15,19 @@ export class InstancesPage extends ComponentBase {
   instances: any;
   dfc: any;
   constructor(
-    public dataFrame: DataFrame,
-    public http: Http,
-    public events: Events,
+    public data: Data,
     public changeDetector: ChangeDetectorRef,
-    public navCtrl: NavController,
-    public modalController: ModalController,
-    public navParams: NavParams) {
+    public navCtrl: NavController) {
     super();
-  }
-
-  ngOnInit() {
-    this.dfc = this.dataFrame.uses(['instances'], collections => {
-      this.instances = collections[0].collection;
-      this.changeDetector.detectChanges();
+    this.initData();
+    this.addValueProp(this, 'instances', {
+      requires: { collection: 'instances' },
+      get(instances) { 
+        return instances.map(instance => Object.assign({
+          get time() { return Sugar.Date.relative(Sugar.Date.create(instance.start)); }
+        }, instance));
+      }
     });
-  }
-
-  ngOnDestroy() {
-    this.dfc.destruct();
-  }
-
-  timeSince(instance) {
-    return Sugar.Date.relative(Sugar.Date.create(instance.start));
   }
 
   goToInstance(instance) {
@@ -44,6 +35,6 @@ export class InstancesPage extends ComponentBase {
   }
 
   reload() {
-    this.dfc.reload();
+    this.data.reloadAll();
   }
 }

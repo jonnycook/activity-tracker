@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, SimpleChanges, Inject } from '@angular/core';
 import { NavController, NavParams, ModalController, ViewController, Events } from 'ionic-angular';
 import { Http } from '@angular/http';
 import { ComponentBase } from '../../util';
@@ -6,11 +6,13 @@ import { RoutinePage } from '../routine/routine';
 import { InstancePage } from '../instance/instance';
 import { ActivityPage } from '../activity/activity';
 
-import { activityTotalTime, categoryTotalTime, routineTime } from '../../model';
+// import { activityTotalTime, } from '../../model';
 import { DataFrame } from '../../DataFrame';
-
-var model = { activityTotalTime, categoryTotalTime, routineTime };
-
+import { Api } from '../../api';
+import { Data } from '../../Data';
+import Sugar from 'sugar';
+import { formatDuration } from '../../util';
+import { activityTotalTime, routineTime, categoryTotalTime } from '../../model';
 
 import {CachedValuePool} from '../../CachedValuePool';
 @Component({
@@ -40,17 +42,26 @@ export class StartActivityList extends ComponentBase {
   activities: any = [];
   instances: any = [];
   category: any;
-  dataFrame: DataFrame;
 
   constructor(
     private navController: NavController,
     private http: Http,
-    private changeDetector: ChangeDetectorRef,
-    public events: Events,
+    protected data: Data,
+    protected changeDetector: ChangeDetectorRef,
     private navParams: NavParams) {
     super();
-    this.dataFrame = this.navParams.get('dataFrame');
+    this.initData();
+
     this.category = this.navParams.get('category');
+
+    Object.defineProperty(this, 'activities', { get: this.value({
+      requires: { collection: 'activities' },
+      get: (activities) => {
+        return activities.filter(activity => activity.category == this.category).map(activity => {
+          return Object.assign(this.valueProp('time', activityTotalTime, activity), activity);
+        });
+      }
+    })});
 
     var valuePool = new CachedValuePool();
     this.setInterval(() => {
@@ -58,20 +69,16 @@ export class StartActivityList extends ComponentBase {
       this.changeDetector.detectChanges();
     }, 1000);
 
-    this.activities = this.navParams.get('activities').map(activity => {
-      let time = valuePool.newValue(() => model.activityTotalTime(this.dataFrame, activity));
-      return Object.assign({}, activity, { get time() { return time.get() }});;
-    });
-  }
-
-  ngOnInit() {
-    [this.instances] = this.dataFrame.collections(['instances']);
+  //   this.activities = this.navParams.get('activities').map(activity => {
+  //     // let time = valuePool.newValue(() => model.activityTotalTime(this.dataFrame, activity));
+  //     return Object.assign({}, activity);
+  //   });
   }
 
   startActivity(activity) {
     this.http.post('http://jonnycook.com:8000/v1/activities/' + activity._id + '/start', null).subscribe(() => {
       this.navController.popToRoot();
-      this.dataFrame.changed(['instances']);
+      this.data.changed({ collection: 'instances' });
     });
   }
 }
@@ -108,7 +115,10 @@ export class StartActivityList extends ComponentBase {
 export class NewActivityPage extends ComponentBase {
   name: any;
   category: any;
-  constructor(private viewController: ViewController, public events: Events) {
+  constructor(
+    // private data: Data,
+    private viewController: ViewController,
+    public events: Events) {
     super();
   }
   dismiss() {
@@ -121,6 +131,7 @@ export class NewActivityPage extends ComponentBase {
 }
 
 
+
 @Component({
   selector: 'page-dashboard',
   templateUrl: 'dashboard.html'
@@ -128,100 +139,82 @@ export class NewActivityPage extends ComponentBase {
 export class DashboardPage extends ComponentBase {
   currentInstances: any = [];
   routines: any = [];
-  activities: any;;
-
-  timeValuePool: CachedValuePool = new CachedValuePool();
-
-  dfc: any;
+  activities: any;
+  page = 0;
+  _values = [];
 
   constructor(
-    public dataFrame: DataFrame,
+    public data: Data,
+    public api: Api,
     public http: Http,
     public events: Events,
     public changeDetector: ChangeDetectorRef,
     public navCtrl: NavController,
-    public modalController: ModalController,
-    public navParams: NavParams) {
+    public modalController: ModalController) {
     super();
+    this.initData();
 
-    this.dfc = this.dataFrame.uses(['instances', 'activities', 'routines'], (collections) => {
-      for (let collection of collections) {
-        switch (collection.key) {
-          case 'activities': {
-            this.activities = collection.collection.filter(activity => !activity.done);
-            break;
-          }
-          case 'instances': {
-            this.currentInstances = collection.collection.filter(instance => !instance.end);
-            break;
-          }
-          case 'routines': {
-            this.routines = collection.collection;
-            for (let routine of this.routines) {
-              let time = this.timeValuePool.newValue(() => model.routineTime(this.dataFrame, routine));
-              Object.defineProperty(routine, 'time', { get: time.getter })
+    Object.defineProperty(this, 'activityEntries', {
+      get: this.value({
+        requires: { collection: 'activities' },
+        get: (activities) => {
+          var entries = [];
+          var categories = {};
+
+          for (let activity of activities) {
+            if (activity.category) {
+              if (!categories[activity.category]) {
+                categories[activity.category] = [];
+              }
+              categories[activity.category].push(activity);
+            }
+            else {
+              var entry = { type: 'activity', activity: activity };
+              Object.defineProperty(entry, 'time', { get: this.value(activityTotalTime, activity) });
+              entries.push(entry);
             }
           }
+
+          for (let category in categories) {
+            let entry = { type: 'category', category: category, activities: categories[category] }
+            Object.defineProperty(entry, 'time', { get: this.value(categoryTotalTime, category) });
+            entries.push(entry);
+          }
+          return entries;
         }
-      }
-      this.refresh();
+      })
+    });
+
+    Object.defineProperty(this, 'currentInstances', {
+      get: this.value({
+        prop: 'currentInstances',
+        requires: { collection: 'instances' },
+        get(instances) {
+          return instances.filter(instance => !instance.end);
+        }
+      })
+    });
+
+    Object.defineProperty(this, 'routines', {
+      get: this.value({
+        requires: { collection: 'routines' },
+        get: (routines) => {
+          for (let routine of routines) {
+            Object.defineProperty(routine, 'time', { get: this.value(routineTime, routine) });
+          }
+          return routines;
+        }
+      })
     });
 
     this.subscribe('activity:created', async (data) => {
       await this.http.post('http://jonnycook.com:8000/v1/activities', data).toPromise();;
-      this.dataFrame.changed(['activities']);
+      this.data.changed({ collection: 'activities' });
     });
-
-    this.setInterval(() => {
-      this.timeValuePool.clear();
-      this.changeDetector.detectChanges();
-    }, 1000);
   }
 
-  ngOnDestroy() {
-    super.ngOnDestroy();
-    this.dfc.destruct();
-  }
-
-  // ngOnInit() {
-  //   for (var attribute in this.constructor.prototype) {
-  //     if (attribute.match(/^constructor_/)) {
-  //       this[attribute]();        
-  //     }
-  //   }
-  // }
-
-
-  startActivityEntries: any;
-  refresh() {
-    this.startActivityEntries = [];
-
-    var categories = {};
-    for (let activity of this.activities) {
-      if (activity.category) {
-        if (!categories[activity.category]) {
-          categories[activity.category] = [];
-        }
-        categories[activity.category].push(activity);
-      }
-      else {
-        var entry = { type: 'activity', activity: activity };
-        let timerValue = this.timeValuePool.newValue(() => model.activityTotalTime(this.dataFrame, activity));
-        Object.defineProperty(entry, 'time', { get: timerValue.getter });
-        this.startActivityEntries.push(entry);
-      }
-    }
-
-    for (let category in categories) {
-      let entry = { type: 'category', category: category, activities: categories[category] }
-      let timerValue = this.timeValuePool.newValue(() => model.categoryTotalTime(this.dataFrame, category));
-      Object.defineProperty(entry, 'time', { get: timerValue.getter });
-      this.startActivityEntries.push(entry);
-    }
-  }
-
-  async reload() {
-    await this.dfc.reload();
+  reload() {
+    this.data.reloadAll();
   }
 
   newActivity() {
@@ -230,16 +223,16 @@ export class DashboardPage extends ComponentBase {
 
   async startActivity(event, activity) {
     await this.http.post('http://jonnycook.com:8000/v1/activities/' + activity._id + '/start', null).toPromise();
-    this.dataFrame.changed(['instances']);
+    this.data.changed({ collection: 'instances' })
   }
 
   async stopInstance(event, instance) {
     await this.http.post('http://jonnycook.com:8000/v1/instances/' + instance._id + '/stop', null).toPromise();
-    this.dataFrame.changed(['instances']);
+    this.data.changed({ collection: 'instances' })
   }
 
   goToCategory(category, activities) {
-    this.navCtrl.push(StartActivityList, { category: category, activities: activities, dataFrame: this.dataFrame });
+    this.navCtrl.push(StartActivityList, { category: category, activities: activities });
   }
 
   goToRoutine(routine) {

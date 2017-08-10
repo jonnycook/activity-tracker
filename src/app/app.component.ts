@@ -2,11 +2,11 @@ import { Component, ViewChild } from '@angular/core';
 import { Nav, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-
-// import { HomePage } from '../pages/home/home';
 import { DashboardPage } from '../pages/dashboard/dashboard';
 import { InstancesPage } from '../pages/instances/instances';
 import { ActivitiesPage } from '../pages/activities/activities';
+import { Data } from '../Data';
+import { Api } from '../api';
 import 'moment-duration-format';
 
 @Component({
@@ -14,36 +14,58 @@ import 'moment-duration-format';
 })
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
-
   rootPage: any = DashboardPage;
-
   pages: Array<{title: string, component: any}>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen) {
+  constructor(
+    public data: Data,
+    public api: Api,
+    public platform: Platform,
+    public statusBar: StatusBar,
+    public splashScreen: SplashScreen) {
     this.initializeApp();
+    this.data.resources = [
+      [
+        'now',
+        () => new Date()
+      ],
+      [
+        { collection: 'instances' },
+        () => this.api.instances()
+      ],
+      [
+        { collection: 'activities' },
+        () => this.api.activities()
+      ],
+      [
+        { collection: 'routines' },
+        () => this.api.routines()
+      ],
+      [
+        { relationship: ['activityInstances'] },
+        ({ relationship: [,id]}) => this.api.activityInstances(id)
+      ]
+    ];
 
-    // used for an example of ngFor and navigation
+    setInterval(() => {
+      this.data.changed('now');
+    }, 1000);
+
     this.pages = [
       { title: 'Dashboard', component: DashboardPage },
       { title: 'Instances', component: InstancesPage },
       { title: 'Activities', component: ActivitiesPage },
-      // { title: 'Home', component: HomePage },
-      // { title: 'List', component: ListPage }
     ];
   }
 
   initializeApp() {
     this.platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
       this.statusBar.styleDefault();
       this.splashScreen.hide();
     });
   }
 
   openPage(page) {
-    // Reset the content nav to have just this page
-    // we wouldn't want the back button to show in this scenario
     this.nav.setRoot(page.component);
   }
 }

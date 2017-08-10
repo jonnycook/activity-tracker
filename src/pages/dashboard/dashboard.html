@@ -4,16 +4,13 @@
       <ion-icon name="menu"></ion-icon>
     </button>
     <ion-title>Dashboard</ion-title>
-
     <ion-buttons end>
-    <button ion-button icon-only (click)="reload()">
-      <ion-icon name="refresh"></ion-icon>
-    </button>
+      <button ion-button icon-only (click)="reload()">
+        <ion-icon name="refresh"></ion-icon>
+      </button>
     </ion-buttons>
-
   </ion-navbar>
 </ion-header>
-
 <ion-content>
   <ion-list>
     <div class="current-instances">
@@ -24,11 +21,9 @@
       <button class="stop" ion-button item-right (click)="stopInstance($event, instance); $event.stopPropagation()"><duration [timer]="instance"></duration></button>
     </button>
     </div>
-
     <ion-list-header>Start Activity</ion-list-header>
     <button ion-item detail-none (click)="newActivity()">New activity...</button>
-
-    <div *ngFor="let entry of startActivityEntries">
+    <div *ngFor="let entry of activityEntries">
       <button class="activity" ion-item detail-none (click)="startActivity($event, entry.activity)" *ngIf="entry.type == 'activity'">
         {{ entry.activity.name }}
         <span item-right>{{ entry.time }}</span>
@@ -38,24 +33,10 @@
         <span item-right>{{ entry.time }}</span>
       </button>
     </div>
-
     <ion-list-header>Routines</ion-list-header>
     <button ion-item detail-none *ngFor="let routine of routines" (click)="goToRoutine(routine)">
       {{ routine.name }}
       <span item-right>{{ routine.time }}</span>
     </button>
-
-<!--     <ion-list-header>Start Activity</ion-list-header>
-    <button ion-item detail-none (click)="newActivity()">New activity...</button>
-    <button ion-item detail-none *ngFor="let activity of activities" (click)="startActivity($event, activity)">
-      {{ activity.name }}
-      <span class="category">{{ activity.category }}</span>
-      <span item-right>{{ activityTotalTime(activity) }}</span>
-    </button>
- -->
-
   </ion-list>
-  <div *ngIf="selectedItem" padding>
-    You navigated here from <b>{{selectedItem.title}}</b>
-  </div>
 </ion-content>

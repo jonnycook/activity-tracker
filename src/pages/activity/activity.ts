@@ -8,7 +8,7 @@ import Sugar from 'sugar';
 
 import { ToastController } from 'ionic-angular';
 
-import { DataFrame } from '../../DataFrame';
+import { Data } from '../../Data';
 
 
 @Component({
@@ -20,27 +20,27 @@ export class ActivityPage extends ComponentBase {
   instances: any = [];
   dfc: any;
   constructor(
-    public dataFrame: DataFrame,
     public toastCtrl: ToastController,
     public http: Http,
     public api: Api,
-    public events: Events,
+    public data: Data,
     public changeDetector: ChangeDetectorRef,
     public navCtrl: NavController,
     public modalController: ModalController,
     public navParams: NavParams) {
     super();
+    this.initData();
     this.activity = this.navParams.get('activity');
 
-    this.dfc = this.dataFrame.uses([['activityInstances', this.activity._id]], (collections) => {
-      this.instances = collections[0].collection
+    this.addValueProp(this, 'instances', {
+      requires: { collection: 'instances' },
+      get: (instances) => { return instances.filter(instance => instance.activity._id == this.activity._id) }
     });
   }
 
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.dfc.destruct();;
     this.save();
   }
   
@@ -58,7 +58,7 @@ export class ActivityPage extends ComponentBase {
   // }
   async save() {
     await this.http.patch('http://jonnycook.com:8000/v1/activities/' + this.activity._id, this.activity).toPromise();
-    this.dataFrame.changed(['activities']);
+    // this.dataFrame.changed(['activities']);
     // this.toastCtrl.create({
     //   message: 'Activity saved',
     //   duration: 3000
@@ -67,7 +67,8 @@ export class ActivityPage extends ComponentBase {
 
   async start() {
     await this.api.startActivity(this.activity);
-    this.dataFrame.changed([['activityInstances', this.activity._id]]);
+    this.data.changed({ relationship: ['activityInstances', this.activity._id] });
+    this.data.changed({ collections: 'instances' });
   }
 
   timeSince(instance) {
